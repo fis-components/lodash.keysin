@@ -1,16 +1,14 @@
 /**
- * lodash 3.0.8 (Custom Build) <https://lodash.com/>
+ * lodash 3.0.0 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
  * Copyright 2012-2015 The Dojo Foundation <http://dojofoundation.org/>
- * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
+ * Based on Underscore.js 1.7.0 <http://underscorejs.org/LICENSE>
  * Copyright 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
  * Available under MIT license <https://lodash.com/license>
  */
 var isArguments = require('lodash.isarguments'),
-    isArray = require('lodash.isarray');
-
-/** Used to detect unsigned integer values. */
-var reIsUint = /^\d+$/;
+    isArray = require('lodash.isarray'),
+    support = require('lodash.support');
 
 /** Used for native method references. */
 var objectProto = Object.prototype;
@@ -19,10 +17,11 @@ var objectProto = Object.prototype;
 var hasOwnProperty = objectProto.hasOwnProperty;
 
 /**
- * Used as the [maximum length](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-number.max_safe_integer)
- * of an array-like value.
+ * Used as the maximum length of an array-like value.
+ * See the [ES spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-tolength)
+ * for more details.
  */
-var MAX_SAFE_INTEGER = 9007199254740991;
+var MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
 
 /**
  * Checks if `value` is a valid array-like index.
@@ -33,15 +32,13 @@ var MAX_SAFE_INTEGER = 9007199254740991;
  * @returns {boolean} Returns `true` if `value` is a valid index, else `false`.
  */
 function isIndex(value, length) {
-  value = (typeof value == 'number' || reIsUint.test(value)) ? +value : -1;
+  value = +value;
   length = length == null ? MAX_SAFE_INTEGER : length;
   return value > -1 && value % 1 == 0 && value < length;
 }
 
 /**
  * Checks if `value` is a valid array-like length.
- *
- * **Note:** This function is based on [`ToLength`](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-tolength).
  *
  * @private
  * @param {*} value The value to check.
@@ -52,8 +49,10 @@ function isLength(value) {
 }
 
 /**
- * Checks if `value` is the [language type](https://es5.github.io/#x8) of `Object`.
+ * Checks if `value` is the language type of `Object`.
  * (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+ *
+ * **Note:** See the [ES5 spec](https://es5.github.io/#x8) for more details.
  *
  * @static
  * @memberOf _
@@ -75,7 +74,7 @@ function isObject(value) {
   // Avoid a V8 JIT bug in Chrome 19-20.
   // See https://code.google.com/p/v8/issues/detail?id=2291 for more details.
   var type = typeof value;
-  return !!value && (type == 'object' || type == 'function');
+  return type == 'function' || (value && type == 'object') || false;
 }
 
 /**
@@ -86,7 +85,7 @@ function isObject(value) {
  * @static
  * @memberOf _
  * @category Object
- * @param {Object} object The object to query.
+ * @param {Object} object The object to inspect.
  * @returns {Array} Returns the array of property names.
  * @example
  *
@@ -109,11 +108,11 @@ function keysIn(object) {
   }
   var length = object.length;
   length = (length && isLength(length) &&
-    (isArray(object) || isArguments(object)) && length) || 0;
+    (isArray(object) || (support.nonEnumArgs && isArguments(object))) && length) || 0;
 
   var Ctor = object.constructor,
       index = -1,
-      isProto = typeof Ctor == 'function' && Ctor.prototype === object,
+      isProto = typeof Ctor == 'function' && Ctor.prototype == object,
       result = Array(length),
       skipIndexes = length > 0;
 
