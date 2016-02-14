@@ -4,7 +4,7 @@
     "name": "lodash.keysin",
     "main": "index.js",
     "dependencies": {},
-    "version": "4.0.2",
+    "version": "4.1.0",
     "description": "The lodash method `_.keysIn` exported as a module.",
     "reposType": "npm"
 }
